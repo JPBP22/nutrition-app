@@ -2,7 +2,7 @@
 
 ### App built on flutter to recommend vitamins for a monthly susbcription.
 
-1. Login & Sign up.
+1. Login & Sign up (Viernes 24).
     - Create user and login.
         1. Add photo.
         2. Choose username.
@@ -35,6 +35,10 @@
 
 4. Edamam API connected with Nnutritional gpt (Chat gpt api to receive recommendations about the nutritional plans the user shuld follow).
     - Share your results with others (TBD).
+    - Share your dishes with gpt to get suggestions from it.
 
-5. Fourth item
+5. Dishes section.
+    - Filter and search dishes. 
+    - Include grid view of the different dishes.
+        1. Tap on the dishes to check for recipe and nutritional info.
 
