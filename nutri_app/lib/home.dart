@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'screens/export_screens.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -11,7 +12,7 @@ class HomeState extends State<Home> {
   int _selectedIndex = 0;
 
   static List<Widget> pages = <Widget>[
-    //ExploreScreen(),
+    ExploreScreen(),
     //RecipesScreen(),
     //GroceryScreen(),
   ];
