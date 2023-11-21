@@ -13,8 +13,8 @@ class HomeState extends State<Home> {
 
   static List<Widget> pages = <Widget>[
     ExploreScreen(),
-    //RecipesScreen(),
-    //GroceryScreen(),
+    DishesScreen(),
+    GptNutritionScreen(),
   ];
   void onItemTapped(int index){
     setState(() {
