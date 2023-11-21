@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nutri_app/components/custom_icons_icons.dart';
 import 'screens/export_screens.dart';
 
 class Home extends StatefulWidget {
@@ -12,9 +13,11 @@ class HomeState extends State<Home> {
   int _selectedIndex = 0;
 
   static List<Widget> pages = <Widget>[
-    ExploreScreen(),
-    DishesScreen(),
-    GptNutritionScreen(),
+
+    const ExploreScreen(),
+    const DishesScreen(),
+    const GptNutritionScreen(),
+
   ];
   void onItemTapped(int index){
     setState(() {
@@ -42,11 +45,11 @@ class HomeState extends State<Home> {
               label: 'Explore',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.book),
+              icon: Icon(Icons.local_dining_outlined),
               label: 'Recipes',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.list),
+              icon: Icon(CustomIcons.gpt_logo),
               label: 'To Buy',
             ),
           ],
