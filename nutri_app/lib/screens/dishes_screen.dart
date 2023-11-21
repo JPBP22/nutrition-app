@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
-class ExploreScreen extends StatelessWidget {
-  const ExploreScreen({super.key});
+class DishesScreen extends StatelessWidget {
+  const DishesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        color: Colors.green,
+        color: Colors.blue,
         child: const Center(
-          child: Text('Explore Screen'),
+          child: Text('Dishes Screen'),
         ),
       ),
     );

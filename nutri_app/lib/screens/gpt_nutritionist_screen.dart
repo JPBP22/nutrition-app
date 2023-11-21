@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class ExploreScreen extends StatelessWidget {
-  const ExploreScreen({super.key});
+class GptNutritionScreen extends StatelessWidget {
+  const GptNutritionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -9,7 +9,7 @@ class ExploreScreen extends StatelessWidget {
       body: Container(
         color: Colors.green,
         child: const Center(
-          child: Text('Explore Screen'),
+          child: Text('GPT screen.'),
         ),
       ),
     );
