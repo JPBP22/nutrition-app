@@ -26,7 +26,7 @@ class LoginScreen extends StatelessWidget {
                 height: 200,
                 child: Image(
                   image: AssetImage(
-                    'assets/fooderlich_assets/rw_logo.png',
+                    '../assets/rw_logo.png',
                   ),
                 ),
               ),
@@ -57,7 +57,7 @@ class LoginScreen extends StatelessWidget {
         ),
         onPressed: () async {
           //Provider.of<AppStateManager>(context, listen: false)
-          // .login('mockUsername', 'mockPassword'); 
+          // .login('mockUsername', 'mockPassword');
         },
       ),
     );

@@ -2,21 +2,16 @@ import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import 'home.dart';
 
-
 void main() {
-  runApp(const Fooderlich());
+  runApp(const NutriApp());
 }
 
-class Fooderlich extends StatelessWidget {
-  const Fooderlich({Key? key}) : super(key: key);
+class NutriApp extends StatelessWidget {
+  const NutriApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final theme = AppTheme.light();
-    return MaterialApp(
-      theme: theme,
-      title: 'Fooderlich',
-      home: const Home()
-      );
+    return MaterialApp(theme: theme, title: 'NutriApp', home: const Home());
   }
 }

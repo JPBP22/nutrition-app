@@ -25,7 +25,7 @@ class HomeState extends State<Home> {
   ];
 
   // Function to handle item taps in the BottomNavigationBar
-  void onItemTapped(int index){
+  void onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
@@ -37,7 +37,7 @@ class HomeState extends State<Home> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Fooderlich',
+          'NutriApp',
           style: Theme.of(context).textTheme.headline6,
         ),
       ),
