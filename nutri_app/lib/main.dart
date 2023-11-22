@@ -9,21 +9,19 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final appStateManager = AppStateManager();
   await appStateManager.initializeApp();
-  runApp(Fooderlich(appStateManager: appStateManager));
+  runApp(NutriApp(appStateManager: appStateManager));
 }
 
-class Fooderlich extends StatefulWidget {
+class NutriApp extends StatefulWidget {
   final AppStateManager appStateManager;
 
-  const Fooderlich({
-    super.key,
-    required this.appStateManager});
+  const NutriApp({super.key, required this.appStateManager});
 
   @override
-  FooderlichState createState() => FooderlichState();
+  NutriAppState createState() => NutriAppState();
 }
 
-class FooderlichState extends State<Fooderlich> {
+class NutriAppState extends State<NutriApp> {
   // late final _groceryManager = GroceryManager();
   // late final _profileManager = ProfileManager();
   late final _appRouter = AppRouter(
@@ -46,7 +44,7 @@ class FooderlichState extends State<Fooderlich> {
           final router = _appRouter.router;
           return MaterialApp.router(
             theme: AppTheme.dark(),
-            title: 'Fooderlich',
+            title: 'NutriApp',
             routeInformationParser: router.routeInformationParser,
             routeInformationProvider: router.routeInformationProvider,
             routerDelegate: router.routerDelegate,
@@ -56,4 +54,3 @@ class FooderlichState extends State<Fooderlich> {
     );
   }
 }
-

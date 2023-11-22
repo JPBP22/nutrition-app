@@ -15,49 +15,47 @@ class AppRouter {
   );
 
   late final router = GoRouter(
-    debugLogDiagnostics: true,
-    refreshListenable: appStateManager,
-    initialLocation: '/login',
-    routes: [
-      GoRoute(
-        name:'login',
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
+      debugLogDiagnostics: true,
+      refreshListenable: appStateManager,
+      initialLocation: '/login',
+      routes: [
+        GoRoute(
+          name: 'login',
+          path: '/login',
+          builder: (context, state) => const LoginScreen(),
         ),
-      GoRoute(
-        name: 'home',
-        path: '/:tab',
-        builder: (context, state){
-          final tab = int.tryParse(state.params['tab'] ?? '') ?? 0;
-          return Home(key: state.pageKey, currentTab: tab);
-        },
-        routes: [
-                GoRoute(
-                  name: 'iewebpage',
-                  path: 'iewebpage',
-                  builder: (context, state) => const WebViewScreen(),
-          )
-      ]),
-    ],
-    errorPageBuilder: (context, state) {
-      return MaterialPage(
-        key: state.pageKey,
-        child: Scaffold(
-          body: Center(
-            child: Text(state.error.toString()),
+        GoRoute(
+            name: 'home',
+            path: '/:tab',
+            builder: (context, state) {
+              final tab = int.tryParse(state.params['tab'] ?? '') ?? 0;
+              return Home(key: state.pageKey, currentTab: tab);
+            },
+            routes: [
+              GoRoute(
+                name: 'iewebpage',
+                path: 'iewebpage',
+                builder: (context, state) => const WebViewScreen(),
+              )
+            ]),
+      ],
+      errorPageBuilder: (context, state) {
+        return MaterialPage(
+          key: state.pageKey,
+          child: Scaffold(
+            body: Center(
+              child: Text(state.error.toString()),
+            ),
           ),
-          ),
-          );
-    },
-    redirect: (context, state) {
-      final loggedIn = appStateManager.isLoggedIn;
-      final logginIn = state.subloc == '/login';
-      if (!loggedIn) return logginIn ? null : '/login';
+        );
+      },
+      redirect: (context, state) {
+        final loggedIn = appStateManager.isLoggedIn;
+        final logginIn = state.subloc == '/login';
+        if (!loggedIn) return logginIn ? null : '/login';
 
-      if(logginIn) return '${NutriAppTab.explore}';
+        if (logginIn) return '/${NutriAppTab.explore}';
 
-      return null;
-    }
-
-  );
+        return null;
+      });
 }

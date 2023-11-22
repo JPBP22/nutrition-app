@@ -31,7 +31,7 @@ class HomeState extends State<Home> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Fooderlich',
+          'NutriApp',
           style: Theme.of(context).textTheme.headline6,
         ),
         actions: [
@@ -44,8 +44,7 @@ class HomeState extends State<Home> {
         currentIndex: widget.currentTab,
         onTap: (index) {
           Provider.of<AppStateManager>(context, listen: false).goToTab(index);
-          context.goNamed('home', params:
-              {'tab': '$index'});
+          context.goNamed('home', params: {'tab': '$index'});
         },
         items: const [
           BottomNavigationBarItem(
@@ -58,7 +57,7 @@ class HomeState extends State<Home> {
           ),
           BottomNavigationBarItem(
             icon: Icon(CustomIcons.gpt_logo),
-            label: 'To Buy',
+            label: 'GPT Nutritionist',
           ),
         ],
       ),
