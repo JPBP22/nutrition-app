@@ -28,7 +28,7 @@ class LoginScreen extends StatelessWidget {
                 height: 200,
                 child: Image(
                   image: AssetImage(
-                    '../assets/rw_logo.png',
+                    'lib/assets/logo.jpeg',
                   ),
                 ),
               ),
@@ -59,7 +59,7 @@ class LoginScreen extends StatelessWidget {
         ),
         onPressed: () async {
           Provider.of<AppStateManager>(context, listen: false)
-          .login('mockUsername', 'mockPassword');
+              .login('mockUsername', 'mockPassword');
         },
       ),
     );

@@ -34,8 +34,14 @@ class HomeState extends State<Home> {
           'NutriApp',
           style: Theme.of(context).textTheme.headline6,
         ),
-        actions: [
+        actions: <Widget>[
           profileButton(widget.currentTab),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              Provider.of<AppStateManager>(context, listen: false).logout();
+            },
+          ),
         ],
       ),
       body: IndexedStack(index: widget.currentTab, children: pages),
