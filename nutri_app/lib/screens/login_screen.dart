@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:nutri_app/models/app_state_manager.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatelessWidget {
   final String? username;
@@ -26,14 +28,14 @@ class LoginScreen extends StatelessWidget {
                 height: 200,
                 child: Image(
                   image: AssetImage(
-                    'assets/fooderlich_assets/rw_logo.png',
+                    'lib/assets/logo.jpeg',
                   ),
                 ),
               ),
               const SizedBox(height: 16),
-              buildTextfield(username ?? '🍔 username'),
+              buildTextfield(username ?? 'Username'),
               const SizedBox(height: 16),
-              buildTextfield('🎹 password'),
+              buildTextfield('Password'),
               const SizedBox(height: 16),
               buildButton(context),
             ],
@@ -56,8 +58,8 @@ class LoginScreen extends StatelessWidget {
           style: TextStyle(color: Colors.white),
         ),
         onPressed: () async {
-          //Provider.of<AppStateManager>(context, listen: false)
-          // .login('mockUsername', 'mockPassword'); 
+          Provider.of<AppStateManager>(context, listen: false)
+              .login('mockUsername', 'mockPassword');
         },
       ),
     );
