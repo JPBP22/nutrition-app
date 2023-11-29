@@ -1,11 +1,9 @@
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
 
 class CreateThreadService {
-  // TODO: Replace with values from .env file in the future
-  final String _assistantId = 'id';
-  final String _apiKey = 'key';
-
+  final String _apiKey = dotenv.env['OPENAI_API_KEY']!;
 
   Future<http.Response> createThread() async {
     var url = Uri.parse('https://api.openai.com/v1/threads');

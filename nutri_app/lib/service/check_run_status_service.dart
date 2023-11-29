@@ -1,12 +1,12 @@
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class CheckRunStatusService {
-  // TODO: Replace with values from .env file in the future
-  final String _apiKey = 'key';
-
+  final String _apiKey = dotenv.env['OPENAI_API_KEY']!;
 
   Future<http.Response> checkRunStatus(String threadId, String runId) async {
-    var url = Uri.parse('https://api.openai.com/v1/threads/$threadId/runs/$runId');
+    var url =
+        Uri.parse('https://api.openai.com/v1/threads/$threadId/runs/$runId');
     try {
       var response = await http.get(url, headers: {
         'Authorization': 'Bearer $_apiKey',

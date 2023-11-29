@@ -1,8 +1,8 @@
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class GetMessagesService {
-  // TODO: Replace with values from .env file in the future
-  final String _apiKey = 'key';
+  final String _apiKey = dotenv.env['OPENAI_API_KEY']!;
 
   Future<http.Response> getMessages(String threadId) async {
     var url = Uri.parse('https://api.openai.com/v1/threads/$threadId/messages');
