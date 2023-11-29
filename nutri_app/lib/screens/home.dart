@@ -23,7 +23,7 @@ class HomeState extends State<Home> {
   static List<Widget> pages = <Widget>[
     const ExploreScreen(),
     const DishesScreen(),
-    const GptNutritionScreen(),
+    GptNutritionScreen(),
   ];
 
   @override
