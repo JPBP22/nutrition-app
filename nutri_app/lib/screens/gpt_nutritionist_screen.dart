@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
+import '../components/openai_chat_widget.dart';
+
+void main() {
+  runApp(GptNutritionScreen());
+}
 
 class GptNutritionScreen extends StatelessWidget {
-  const GptNutritionScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        color: Colors.green,
-        child: const Center(
-          child: Text('GPT screen.'),
-        ),
+    return MaterialApp(
+      title: 'Flutter OpenAI Chat',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
       ),
+      home: OpenAIChatWidget(),
     );
   }
 }
