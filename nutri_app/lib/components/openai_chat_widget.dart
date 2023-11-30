@@ -69,12 +69,19 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
             final decodedResponse = json.decode(getMessagesResponse.body);
             // Process and display messages
             final List<dynamic> messageData = decodedResponse['data'];
+            // Clear existing messages before adding new ones
+            setState(() => messages.clear());
             for (var msg in messageData) {
-              final content = msg['content'][0]['text']['value'];
-              if (msg['role'] == 'assistant' && content.isNotEmpty) {
+              final content = msg['content'].last['text']['value'];
+              if (msg['role'] == 'user') {
+                setState(() => messages.add('You: $content'));
+              } else if (msg['role'] == 'assistant' && content.isNotEmpty) {
                 setState(() => messages.add('Assistant: $content'));
               }
             }
+
+            // Reverse the order of messages before updating the state
+            setState(() => messages = messages.reversed.toList());
           } else {
             // Handle error in getting messages
             setState(() => messages.add('Error: Failed to get messages.'));
