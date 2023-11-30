@@ -6,6 +6,7 @@ import '../service/run_thread_service.dart';
 import '../service/check_run_status_service.dart';
 import '../service/retrieve_run_steps_service.dart';
 import '../service/get_messages_service.dart';
+import '../app_theme.dart';
 
 class OpenAIChatWidget extends StatefulWidget {
   @override
@@ -45,7 +46,7 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
 
     bool isCompleted = false;
     while (!isCompleted) {
-      await Future.delayed(Duration(seconds: 2)); // Polling delay
+      await Future.delayed(const Duration(seconds: 2)); // Polling delay
       final runStatusResponse = await _checkRunStatusService.checkRunStatus(threadId, runId);
       if (runStatusResponse.statusCode == 200) {
         final runStatus = json.decode(runStatusResponse.body);
@@ -78,23 +79,66 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('OpenAI Chat')),
       body: Column(
         children: [
           Expanded(
             child: ListView.builder(
-              itemCount: messages.length,
-              itemBuilder: (context, index) => ListTile(title: Text(messages[index])),
-            ),
+            itemCount: messages.isEmpty ? 1 : messages.length,
+            itemBuilder: (context, index) {
+              if (messages.isEmpty) {
+                return Center(
+                  child: Padding(
+                    padding: EdgeInsets.only(bottom: 5.0, right: 16.0, left: 16.0, top: 200.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.eco, // Use a relevant icon, in this case, 'eco' for leaf
+                          size: 100.0,
+                          color: Colors.green,
+                        ),
+                        SizedBox(height: 16.0),
+                        Text(
+                          'Hello! Im your personal nutritionist.\nWe will develop a weekly meal plan specialized just for you!\nGive me some details about your weight, height, sex, activity level, and your goals.',
+                          style: Theme.of(context).textTheme.bodyText1,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              } else {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 5.0, right: 16.0, left: 16.0, top: 5.0),
+                  child: Container(
+                    child: ListTile(
+                      title: Text(messages[index], style: AppTheme.darkTextTheme.bodyText1)
+                      ),
+                    margin: const EdgeInsets.symmetric(vertical: 5.0),
+                    padding: const EdgeInsets.only(bottom: 5.0, right: 16.0, left: 16.0, top: 5.0),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[800],
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                );
+              }
+            },
           ),
-          TextField(
-            controller: _controller,
-            decoration: InputDecoration(
-              labelText: 'Type your message',
-              suffixIcon: IconButton(
-                icon: Icon(Icons.send),
-                onPressed: sendMessage,
+        ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16.0, right: 16.0, left: 16.0),
+            child: TextField(
+              controller: _controller,
+              decoration: InputDecoration(
+                labelText: 'Type your message',
+                prefixIcon: const Icon(Icons.message),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.send),
+                  onPressed: sendMessage,
+                ),
               ),
+              style: Theme.of(context).textTheme.bodyText1,
             ),
           ),
         ],

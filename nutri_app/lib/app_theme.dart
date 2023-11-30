@@ -66,6 +66,12 @@ class AppTheme {
           return Colors.black;
         }),
       ),
+      inputDecorationTheme: InputDecorationTheme(
+      border: OutlineInputBorder(
+        borderSide: const BorderSide(width: 80.0, color:Colors.green),
+        borderRadius: BorderRadius.circular(10.0),
+        ),
+      ),
       appBarTheme: const AppBarTheme(
         foregroundColor: Colors.black,
         backgroundColor: Colors.white,
@@ -87,6 +93,12 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         foregroundColor: Colors.white,
         backgroundColor: Colors.grey[900],
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10.0),
+        borderSide: const BorderSide(color: Colors.green),
+        ),
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         foregroundColor: Colors.white,
