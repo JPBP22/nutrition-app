@@ -17,23 +17,34 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
   final AddUserMessageService _addUserMessageService = AddUserMessageService();
   final RunThreadService _runThreadService = RunThreadService();
   final CheckRunStatusService _checkRunStatusService = CheckRunStatusService();
-  final RetrieveRunStepsService _retrieveRunStepsService = RetrieveRunStepsService();
+  final RetrieveRunStepsService _retrieveRunStepsService =
+      RetrieveRunStepsService();
   final GetMessagesService _getMessagesService = GetMessagesService();
 
   final TextEditingController _controller = TextEditingController();
   List<String> messages = [];
 
+  late String threadId;
+
+  @override
+  void initState() {
+    super.initState();
+    createThread();
+  }
+
+  Future<void> createThread() async {
+    final createThreadResponse = await _createThreadService.createThread();
+    if (createThreadResponse.statusCode == 200) {
+      threadId = json.decode(createThreadResponse.body)['id'];
+    } else {
+      // Handle error
+    }
+  }
+
   Future<void> sendMessage() async {
     final message = _controller.text;
     _controller.clear();
     setState(() => messages.add('You: $message'));
-
-    final createThreadResponse = await _createThreadService.createThread();
-    if (createThreadResponse.statusCode != 200) {
-      // Handle error
-      return;
-    }
-    final threadId = json.decode(createThreadResponse.body)['id'];
 
     await _addUserMessageService.addUserMessage(threadId, message);
     final runThreadResponse = await _runThreadService.runThread(threadId);
@@ -46,12 +57,14 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
     bool isCompleted = false;
     while (!isCompleted) {
       await Future.delayed(Duration(seconds: 2)); // Polling delay
-      final runStatusResponse = await _checkRunStatusService.checkRunStatus(threadId, runId);
+      final runStatusResponse =
+          await _checkRunStatusService.checkRunStatus(threadId, runId);
       if (runStatusResponse.statusCode == 200) {
         final runStatus = json.decode(runStatusResponse.body);
         if (runStatus['status'] == 'completed') {
           isCompleted = true;
-          final getMessagesResponse = await _getMessagesService.getMessages(threadId);
+          final getMessagesResponse =
+              await _getMessagesService.getMessages(threadId);
           if (getMessagesResponse.statusCode == 200) {
             final decodedResponse = json.decode(getMessagesResponse.body);
             // Process and display messages
@@ -84,7 +97,8 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
           Expanded(
             child: ListView.builder(
               itemCount: messages.length,
-              itemBuilder: (context, index) => ListTile(title: Text(messages[index])),
+              itemBuilder: (context, index) =>
+                  ListTile(title: Text(messages[index])),
             ),
           ),
           TextField(
