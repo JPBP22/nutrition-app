@@ -76,9 +76,6 @@ class HomeState extends State<Home> {
       child: GestureDetector(
         child: const CircleAvatar(
           backgroundColor: Colors.transparent,
-          backgroundImage: AssetImage(
-            'assets/profile_pics/person_stef.jpeg',
-          ),
         ),
         onTap: () {
           // TODO: Navigate to profile screen
