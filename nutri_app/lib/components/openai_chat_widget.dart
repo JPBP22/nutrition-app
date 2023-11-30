@@ -26,6 +26,8 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
 
   late String threadId;
 
+  bool isLoading = false; // Add this line to track loading state
+
   @override
   void initState() {
     super.initState();
@@ -45,6 +47,12 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
     final message = _controller.text;
     _controller.clear();
     setState(() => messages.add('You: $message'));
+
+    // Add a placeholder message before starting the loading
+    setState(() {
+      isLoading = true;
+      messages.add('Assistant: typing...');
+    });
 
     await _addUserMessageService.addUserMessage(threadId, message);
     final runThreadResponse = await _runThreadService.runThread(threadId);
@@ -93,6 +101,18 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
         break;
       }
     }
+    setState(() => isLoading = false); // Add this line to track loading state
+    // Replace the placeholder message with the actual assistant message
+    if (!isLoading) {
+      setState(() {
+        int index = messages.indexOf('Assistant: typing...');
+        if (index != -1) {
+          String content = messages.last.split('Assistant: ')[1];
+          messages[index] =
+              'Assistant: $content'; // Replace the placeholder with the actual message
+        }
+      });
+    }
   }
 
   @override
@@ -104,8 +124,10 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
           Expanded(
             child: ListView.builder(
               itemCount: messages.length,
-              itemBuilder: (context, index) =>
-                  ListTile(title: Text(messages[index])),
+              itemBuilder: (context, index) {
+                String message = messages[index];
+                return ListTile(title: Text(message));
+              },
             ),
           ),
           TextField(
