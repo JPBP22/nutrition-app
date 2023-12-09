@@ -26,10 +26,18 @@ class AppRouter {
           builder: (context, state) => const WidgetTree(),
         ),
         GoRoute(
+          name: 'profile',
+          path: '/profile',
+          builder: (context, state) {
+            return const ProfileScreen();
+          },
+        ),
+        GoRoute(
             name: 'home',
             path: '/:tab',
             builder: (context, state) {
               final tab = int.tryParse(state.params['tab'] ?? '') ?? 0;
+              print('Navigating to tab: $tab');
               return Home(key: state.pageKey, currentTab: tab);
             },
             routes: [
