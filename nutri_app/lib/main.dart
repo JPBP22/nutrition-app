@@ -5,7 +5,7 @@ import 'app_theme.dart';
 import 'models/models.dart';
 import 'navigation/app_router.dart';
 
-void main() async {
+  void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   final appStateManager = AppStateManager();
@@ -23,12 +23,9 @@ class NutriApp extends StatefulWidget {
 }
 
 class NutriAppState extends State<NutriApp> {
-  // late final _groceryManager = GroceryManager();
-  // late final _profileManager = ProfileManager();
+
   late final _appRouter = AppRouter(
     widget.appStateManager,
-    // _profileManager,
-    // _groceryManager,
   );
 
   @override

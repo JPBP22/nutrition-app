@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../auth.dart';
 import 'package:provider/provider.dart';
 import '../models/app_state_manager.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/scheduler.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -17,6 +19,8 @@ class _LoginPageState extends State<LoginPage> {
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController  = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _confirmPasswordController  = TextEditingController();
 
   Future<void> signInWithEmailAndPassword() async {
     try {
@@ -31,16 +35,41 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  void clearTextFields() {
+  _emailController.clear();
+  _passwordController.clear();
+  _usernameController.clear();
+  _confirmPasswordController.clear();
+  }
+
   Future<void> createUserWithEmailAndPassword() async {
+    if (_passwordController.text != _confirmPasswordController.text) {
+    setState(() {
+      errorMessage = "Passwords do not match.";
+    });
+    return;
+  }
     try {
-      await Auth().createUserWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
+      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      email: _emailController.text,
+      password: _passwordController.text,
+    );
+      CollectionReference users = FirebaseFirestore.instance.collection('users');
+      return users
+          .doc(userCredential.user?.uid)
+          .set({
+      'username': _usernameController.text,
+      'email': _emailController.text,
+      'password': _passwordController.text,
+    })
+    .then((value) => print("Preferences Saved"))
+    .catchError((error) => print("Failed to save preferences: $error"));
     } on FirebaseAuthException catch (e) {
+      if (mounted) {
       setState(() {
         errorMessage = e.message;
       });
+    }
     }
   }
 
@@ -57,57 +86,110 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _textFieldPassword(
+      String title,
+      TextEditingController controller,
+    ){
+  return TextField(
+    controller: _passwordController,
+    decoration: const InputDecoration(
+      labelText: 'Enter Password',
+      border: OutlineInputBorder(),
+    ),
+    obscureText: true,
+  );
+  }
+
+  Widget _textFieldUsername(
     String title,
     TextEditingController controller,
     ) {
     return TextField(
-      controller: _passwordController,
+      controller: _usernameController,
       decoration: const InputDecoration(
-        labelText: 'Password',
+        labelText: 'Username',
       ),
     );
   }
 
-  Widget _errorMessage(){
-    return Text(errorMessage == '' ? '': 'Humm ? $errorMessage');
+  Widget _textFieldConfirmPassword(
+    String title,
+    TextEditingController controller,
+  ){
+  return TextField(
+    controller: _confirmPasswordController,
+    decoration: const InputDecoration(
+      labelText: 'Confirm Password',
+      border: OutlineInputBorder(),
+    ),
+    obscureText: true,
+  );
+  }
+
+  void _showError(String errorMessage) {
+  SchedulerBinding.instance!.addPostFrameCallback((_) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$errorMessage'),
+        backgroundColor: Colors.green,
+      ),
+    );
+  });
+  }
+
+  Widget _errorMessage() {
+  if (errorMessage != null && errorMessage != '') {
+    _showError(errorMessage!);
+  }
+  return Container();
   }
 
   Widget _submitButton() {
-    return ElevatedButton(
-      onPressed: () async {
-        if (_emailController.text.isNotEmpty && _passwordController.text.isNotEmpty) {
-          try {
-            if (isLogin) {
-              // Attempt to sign in
-              await Auth().signInWithEmailAndPassword(
-                email: _emailController.text,
-                password: _passwordController.text,
-              );
-            } else {
-              // Attempt to create user
-              await Auth().createUserWithEmailAndPassword(
-                email: _emailController.text,
-                password: _passwordController.text,
-              );
-            }
+  return ElevatedButton(
+    style: ElevatedButton.styleFrom(
+      primary: Colors.green, // background color
+      onPrimary: Colors.white, // text color
+      minimumSize: Size(200, 50), // size of the button
+    ),
+    onPressed: () async {
+      if (_emailController.text.isNotEmpty && _passwordController.text.isNotEmpty) {
+        try {
+          if (isLogin) {
+            // Attempt to sign in
+            await Auth().signInWithEmailAndPassword(
+              email: _emailController.text,
+              password: _passwordController.text,
+            );
             Provider.of<AppStateManager>(context, listen: false)
                 .login(_emailController.text, _passwordController.text);
-          } on FirebaseAuthException catch (e) {
-            setState(() {
-              errorMessage = e.message;
-            });
+          } else {
+            // Attempt to create user
+            await createUserWithEmailAndPassword();
+            if (errorMessage == null || errorMessage!.isEmpty) {
+              Provider.of<AppStateManager>(context, listen: false)
+                  .login(_emailController.text, _passwordController.text);
+            }
           }
+        } on FirebaseAuthException catch (e) {
+          setState(() {
+            errorMessage = e.message;
+          });
         }
-      },
-      child: Text(isLogin ? 'Login' : 'Create Account'),
-    );
-  }
+      }
+      clearTextFields();
+    },
+    child: Text(isLogin ? 'Login' : 'Create Account'),
+  );
+}
 
   Widget _loginOrRegisterButton(){
     return TextButton(
+       style: TextButton.styleFrom(
+      primary: isLogin ? Colors.green : Colors.green, // text color
+    ),
       onPressed: (){
         setState(() {
           isLogin = !isLogin;
+           errorMessage = null;
         });
       },
       child: Text(isLogin ? 'Register instead' : 'Login instead'),
@@ -124,21 +206,32 @@ class _LoginPageState extends State<LoginPage> {
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: const EdgeInsets.only(top: 44.0),
             children: [
-              const SizedBox(
-                height: 200,
-                child: Image(
-                  image: AssetImage(
-                    'lib/assets/logo.jpeg',
-                  ),
+              ClipRRect(
+              borderRadius: BorderRadius.circular(20.0), // adjust the radius as needed
+              child: Image(
+                image: AssetImage(
+                  'lib/assets/logo.jpeg',
                 ),
+                width: 200, // adjust the width as needed
+                height: 200, // adjust the height as needed
+                fit: BoxFit.cover, // this makes the image cover the entire space of the ClipRRect
               ),
-              const SizedBox(height: 16),
-              _textFieldEmail('email', _emailController),
-              const SizedBox(height: 16),
-              _textFieldPassword('password', _passwordController),
+              ),
+              SizedBox(height: 40),
+              _textFieldEmail('Email', _emailController),
+              SizedBox(height: 20),
+              _textFieldPassword('Password', _passwordController),
+              SizedBox(height: 10),
+              if (!isLogin) ...[
+                _textFieldConfirmPassword('Confirm Password', _confirmPasswordController),
+                SizedBox(height: 20),
+                _textFieldUsername('Username', _usernameController),
+                SizedBox(height: 20),
+              ],
               _errorMessage(),
+              SizedBox(height: 20),
               _submitButton(),
-              const SizedBox(height: 16),
+              SizedBox(height: 20),
               _loginOrRegisterButton(),
             ],
           ),
@@ -147,47 +240,3 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
-
-/*
-  Widget buildButton(BuildContext context) {
-    return SizedBox(
-      height: 55,
-      child: MaterialButton(
-        color: rwColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-        child: const Text(
-          'Login',
-          style: TextStyle(color: Colors.white),
-        ),
-        onPressed: () async {
-          Provider.of<AppStateManager>(context, listen: false)
-              .login('mockUsername', 'mockPassword');
-        },
-      ),
-    );
-  }
-
-  Widget buildTextfield(String hintText) {
-    return TextField(
-      cursorColor: rwColor,
-      decoration: InputDecoration(
-        border: const OutlineInputBorder(
-          borderSide: BorderSide(
-            color: Colors.green,
-            width: 1.0,
-          ),
-        ),
-        focusedBorder: const OutlineInputBorder(
-          borderSide: BorderSide(
-            color: Colors.green,
-          ),
-        ),
-        hintText: hintText,
-        hintStyle: const TextStyle(height: 0.5),
-      ),
-    );
-  }
-}
-*/
