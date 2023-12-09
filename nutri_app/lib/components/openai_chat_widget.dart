@@ -7,6 +7,8 @@ import '../service/check_run_status_service.dart';
 import '../service/retrieve_run_steps_service.dart';
 import '../service/get_messages_service.dart';
 import '../app_theme.dart';
+import 'save_button.dart'; // Importing the Save button component
+import 'regen_button.dart'; // Importing the Regenerate button component
 
 class OpenAIChatWidget extends StatefulWidget {
   @override
@@ -18,16 +20,13 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
   final AddUserMessageService _addUserMessageService = AddUserMessageService();
   final RunThreadService _runThreadService = RunThreadService();
   final CheckRunStatusService _checkRunStatusService = CheckRunStatusService();
-  final RetrieveRunStepsService _retrieveRunStepsService =
-      RetrieveRunStepsService();
+  final RetrieveRunStepsService _retrieveRunStepsService = RetrieveRunStepsService();
   final GetMessagesService _getMessagesService = GetMessagesService();
 
   final TextEditingController _controller = TextEditingController();
   List<String> messages = [];
-
   late String threadId;
-
-  bool isLoading = false; // Add this line to track loading state
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -44,16 +43,21 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
     }
   }
 
-  Future<void> sendMessage() async {
-    final message = _controller.text;
-    _controller.clear();
-    setState(() => messages.add('You: $message'));
+  Future<void> sendMessage(String message, {bool userInitiated = true}) async {
+    if (userInitiated) {
+      _controller.clear();
+      setState(() => messages.add('You: $message'));
+    } else {
+      // Find the index of the last weekly menu message and update it
+      int menuIndex = messages.lastIndexWhere((msg) => msg.contains("Here's your weekly meal plan:") || msg.contains("Here's your new weekly meal plan:"));
+      if (menuIndex != -1) {
+        setState(() {
+          messages[menuIndex] = 'Assistant: Regenerating menu!';
+        });
+      }
+    }
 
-    // Add a placeholder message before starting the loading
-    setState(() {
-      isLoading = true;
-      messages.add('Assistant: typing...');
-    });
+    setState(() => isLoading = true);
 
     await _addUserMessageService.addUserMessage(threadId, message);
     final runThreadResponse = await _runThreadService.runThread(threadId);
@@ -66,31 +70,34 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
     bool isCompleted = false;
     while (!isCompleted) {
       await Future.delayed(Duration(seconds: 2)); // Polling delay
-      final runStatusResponse =
-          await _checkRunStatusService.checkRunStatus(threadId, runId);
+      final runStatusResponse = await _checkRunStatusService.checkRunStatus(threadId, runId);
       if (runStatusResponse.statusCode == 200) {
         final runStatus = json.decode(runStatusResponse.body);
         if (runStatus['status'] == 'completed') {
           isCompleted = true;
-          final getMessagesResponse =
-              await _getMessagesService.getMessages(threadId);
+          final getMessagesResponse = await _getMessagesService.getMessages(threadId);
           if (getMessagesResponse.statusCode == 200) {
             final decodedResponse = json.decode(getMessagesResponse.body);
-            // Process and display messages
-            final List<dynamic> messageData = decodedResponse['data'];
-            // Clear existing messages before adding new ones
-            setState(() => messages.clear());
-            for (var msg in messageData) {
+            List<String> newMessages = [];
+            for (var msg in decodedResponse['data']) {
               final content = msg['content'].last['text']['value'];
               if (msg['role'] == 'user') {
-                setState(() => messages.add('You: $content'));
+                newMessages.add('You: $content');
               } else if (msg['role'] == 'assistant' && content.isNotEmpty) {
-                setState(() => messages.add('Assistant: $content'));
+                newMessages.add('Assistant: $content');
               }
             }
 
-            // Reverse the order of messages before updating the state
-            setState(() => messages = messages.reversed.toList());
+            setState(() {
+              // Replace the "Regenerating menu!" message with the new menu
+              int regenerateIndex = messages.indexWhere((msg) => msg == 'Assistant: Regenerating menu!');
+              if (regenerateIndex != -1) {
+                messages[regenerateIndex] = newMessages.last;
+              } else {
+                messages.clear();
+                messages.addAll(newMessages.reversed);
+              }
+            });
           } else {
             // Handle error in getting messages
             setState(() => messages.add('Error: Failed to get messages.'));
@@ -102,18 +109,11 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
         break;
       }
     }
-    setState(() => isLoading = false); // Add this line to track loading state
-    // Replace the placeholder message with the actual assistant message
-    if (!isLoading) {
-      setState(() {
-        int index = messages.indexOf('Assistant: typing...');
-        if (index != -1) {
-          String content = messages.last.split('Assistant: ')[1];
-          messages[index] =
-              'Assistant: $content'; // Replace the placeholder with the actual message
-        }
-      });
-    }
+    setState(() => isLoading = false);
+  }
+
+  void regenerateMenu() {
+    sendMessage("Please regenerate the menu", userInitiated: false);
   }
 
   @override
@@ -123,47 +123,34 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
         children: [
           Expanded(
             child: ListView.builder(
-              itemCount: messages.isEmpty ? 1 : messages.length,
+              itemCount: messages.isNotEmpty ? messages.length : 1,
               itemBuilder: (context, index) {
                 if (messages.isEmpty) {
-                  return Center(
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                          bottom: 5.0, right: 16.0, left: 16.0, top: 200.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons
-                                .eco, // Use a relevant icon, in this case, 'eco' for leaf
-                            size: 100.0,
-                            color: Colors.green,
-                          ),
-                          SizedBox(height: 16.0),
-                          Text(
-                            'Hello! Im your personal nutritionist.\nWe will develop a weekly meal plan specialized just for you!\nGive me some details about your weight, height, sex, activity level, and your goals.',
-                            style: Theme.of(context).textTheme.bodyText1,
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
+                  // Your existing code for the empty message state
+                  // ...
                 } else {
+                  bool isWeeklyMenuMessage = messages[index].contains("Here's your weekly meal plan:") || messages[index].contains("Here's your new weekly meal plan:");
                   return Padding(
-                    padding: const EdgeInsets.only(
-                        bottom: 5.0, right: 16.0, left: 16.0, top: 5.0),
-                    child: Container(
-                      child: ListTile(
-                          title: Text(messages[index],
-                              style: AppTheme.darkTextTheme.bodyText1)),
-                      margin: const EdgeInsets.symmetric(vertical: 5.0),
-                      padding: const EdgeInsets.only(
-                          bottom: 5.0, right: 16.0, left: 16.0, top: 5.0),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[800],
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
+                    padding: const EdgeInsets.only(bottom: 5.0, right: 16.0, left: 16.0, top: 5.0),
+                    child: Column(
+                      children: [
+                        Container(
+                          child: ListTile(title: Text(messages[index], style: AppTheme.darkTextTheme.bodyText1)),
+                          margin: const EdgeInsets.symmetric(vertical: 5.0),
+                          padding: const EdgeInsets.only(bottom: 5.0, right: 16.0, left: 16.0, top: 5.0),
+                          decoration: BoxDecoration(color: Colors.grey[800], borderRadius: BorderRadius.circular(8.0)),
+                        ),
+                        if (isWeeklyMenuMessage)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              SaveButton(onSave: () {
+                                // TODO: Implement save functionality
+                              }),
+                              RegenButton(onRegenerate: regenerateMenu),
+                            ],
+                          ),
+                      ],
                     ),
                   );
                 }
@@ -171,8 +158,7 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
             ),
           ),
           Padding(
-            padding:
-                const EdgeInsets.only(bottom: 16.0, right: 16.0, left: 16.0),
+            padding: const EdgeInsets.only(bottom: 16.0, right: 16.0, left: 16.0),
             child: TextField(
               controller: _controller,
               decoration: InputDecoration(
@@ -180,7 +166,7 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
                 prefixIcon: const Icon(Icons.message),
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.send),
-                  onPressed: sendMessage,
+                  onPressed: () => sendMessage(_controller.text),
                 ),
               ),
               style: Theme.of(context).textTheme.bodyText1,
