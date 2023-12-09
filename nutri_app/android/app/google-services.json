@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "860140014223",
-    "project_id": "nutriapplogin",
-    "storage_bucket": "nutriapplogin.appspot.com"
+    "project_number": "1021670559404",
+    "project_id": "nutriapp-fb382",
+    "storage_bucket": "nutriapp-fb382.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:860140014223:android:be5c703cadc5444618befa",
+        "mobilesdk_app_id": "1:1021670559404:android:a951abac2225d012e99909",
         "android_client_info": {
           "package_name": "com.example.nutri_app"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBc6g0dWIbT-8IXnaCRobcp83zJVrWhzZ8"
+          "current_key": "AIzaSyCEx-uPSwrXgpcgHbe_mBZXmSOQmnlS5Yg"
         }
       ],
       "services": {
