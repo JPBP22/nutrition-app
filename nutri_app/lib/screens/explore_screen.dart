@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../components/components.dart';
 
 class ExploreScreen extends StatelessWidget {
   const ExploreScreen({super.key});
@@ -8,10 +9,8 @@ class ExploreScreen extends StatelessWidget {
     return Scaffold(
       body: Container(
         color: Colors.green,
-        child: const Center(
-          child: Text('Explore Screen'),
+        child: Container()
         ),
-      ),
-    );
+        );
   }
 }

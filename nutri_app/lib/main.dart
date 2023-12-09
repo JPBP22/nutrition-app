@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
+import 'package:firebase_core/firebase_core.dart';
 import 'app_theme.dart';
 import 'models/models.dart';
 import 'navigation/app_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   final appStateManager = AppStateManager();
   await appStateManager.initializeApp();
   runApp(NutriApp(appStateManager: appStateManager));
@@ -40,7 +41,6 @@ class NutriAppState extends State<NutriApp> {
       ],
       child: Builder(
         builder: (context) {
-          // TODO: Replace with Router
           final router = _appRouter.router;
           return MaterialApp.router(
             theme: AppTheme.dark(),

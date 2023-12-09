@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../screens/export_screens.dart';
 import '../models/models.dart';
+import '../widget_tree.dart';
 
 class AppRouter {
   final AppStateManager appStateManager;
@@ -22,7 +23,7 @@ class AppRouter {
         GoRoute(
           name: 'login',
           path: '/login',
-          builder: (context, state) => const LoginScreen(),
+          builder: (context, state) => const WidgetTree(),
         ),
         GoRoute(
             name: 'home',
@@ -53,6 +54,7 @@ class AppRouter {
         final loggedIn = appStateManager.isLoggedIn;
         final logginIn = state.subloc == '/login';
         if (!loggedIn) return logginIn ? null : '/login';
+        print('Redirect: loggedIn=$loggedIn, logginIn=$logginIn');
 
         if (logginIn) return '/${NutriAppTab.explore}';
 
