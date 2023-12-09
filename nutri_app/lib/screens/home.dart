@@ -6,9 +6,11 @@ import 'explore_screen.dart';
 import 'dishes_screen.dart';
 import 'gpt_nutritionist_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../auth.dart';
 
 class Home extends StatefulWidget {
-  const Home({
+  Home({
     super.key,
     required this.currentTab,
   });
@@ -26,6 +28,22 @@ class HomeState extends State<Home> {
     GptNutritionScreen(),
   ];
 
+  final User? user = Auth().currentUser;
+
+  Future<void> signOut() async {
+    await Auth().signOut();
+  }
+
+  Widget _signOutButton(){
+    return IconButton(
+        icon: const Icon(Icons.logout),
+            onPressed: () {
+              Provider.of<AppStateManager>(context, listen: false).logout();
+              signOut();
+            },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,13 +53,7 @@ class HomeState extends State<Home> {
           style: Theme.of(context).textTheme.headline6,
         ),
         actions: <Widget>[
-          profileButton(widget.currentTab),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              Provider.of<AppStateManager>(context, listen: false).logout();
-            },
-          ),
+          _signOutButton(),        
         ],
       ),
       body: IndexedStack(index: widget.currentTab, children: pages),
@@ -84,3 +96,4 @@ class HomeState extends State<Home> {
     );
   }
 }
+
