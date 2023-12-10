@@ -20,7 +20,8 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
   final AddUserMessageService _addUserMessageService = AddUserMessageService();
   final RunThreadService _runThreadService = RunThreadService();
   final CheckRunStatusService _checkRunStatusService = CheckRunStatusService();
-  final RetrieveRunStepsService _retrieveRunStepsService = RetrieveRunStepsService();
+  final RetrieveRunStepsService _retrieveRunStepsService =
+      RetrieveRunStepsService();
   final GetMessagesService _getMessagesService = GetMessagesService();
 
   final TextEditingController _controller = TextEditingController();
@@ -43,18 +44,13 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
     }
   }
 
-  Future<void> sendMessage(String message, {bool userInitiated = true}) async {
-    if (userInitiated) {
-      _controller.clear();
-      setState(() => messages.add('You: $message'));
-    } else {
-      // Find the index of the last weekly menu message and update it
-      int menuIndex = messages.lastIndexWhere((msg) => msg.contains("Here's your weekly meal plan:") || msg.contains("Here's your new weekly meal plan:"));
-      if (menuIndex != -1) {
-        setState(() {
-          messages[menuIndex] = 'Assistant: Regenerating menu!';
-        });
-      }
+  Future<void> sendMessage(String message,
+      {bool userInitiated = true, bool addToMessages = true}) async {
+    if (userInitiated && addToMessages) {
+      setState(() {
+        messages.add('You: $message');
+        _controller.clear();
+      });
     }
 
     setState(() => isLoading = true);
@@ -70,32 +66,64 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
     bool isCompleted = false;
     while (!isCompleted) {
       await Future.delayed(Duration(seconds: 2)); // Polling delay
-      final runStatusResponse = await _checkRunStatusService.checkRunStatus(threadId, runId);
+      final runStatusResponse =
+          await _checkRunStatusService.checkRunStatus(threadId, runId);
       if (runStatusResponse.statusCode == 200) {
         final runStatus = json.decode(runStatusResponse.body);
         if (runStatus['status'] == 'completed') {
           isCompleted = true;
-          final getMessagesResponse = await _getMessagesService.getMessages(threadId);
+          final getMessagesResponse =
+              await _getMessagesService.getMessages(threadId);
           if (getMessagesResponse.statusCode == 200) {
             final decodedResponse = json.decode(getMessagesResponse.body);
             List<String> newMessages = [];
+            bool isMenuRegenerated = false;
+
             for (var msg in decodedResponse['data']) {
               final content = msg['content'].last['text']['value'];
-              if (msg['role'] == 'user') {
-                newMessages.add('You: $content');
-              } else if (msg['role'] == 'assistant' && content.isNotEmpty) {
-                newMessages.add('Assistant: $content');
+              if (msg['role'] == 'assistant' && content.isNotEmpty) {
+                String assistantMessage = 'Assistant: $content';
+
+                // Check if the message is a regenerated menu
+                if (content.contains("Here's your new weekly meal plan:")) {
+                  isMenuRegenerated = true;
+                }
+
+                newMessages.add(assistantMessage);
               }
             }
 
             setState(() {
-              // Replace the "Regenerating menu!" message with the new menu
-              int regenerateIndex = messages.indexWhere((msg) => msg == 'Assistant: Regenerating menu!');
-              if (regenerateIndex != -1) {
-                messages[regenerateIndex] = newMessages.last;
+              if (isMenuRegenerated) {
+                // Collect messages to be removed in a separate list
+                var messagesToRemove = messages
+                    .where((m) =>
+                        m.contains("Here's your weekly meal plan:") ||
+                        m.contains("Here's your new weekly meal plan:") ||
+                        m.contains('Assistant: Regenerating menu...'))
+                    .toList();
+
+                // Remove the collected messages
+                messages.removeWhere((m) => messagesToRemove.contains(m));
+
+                // Add only the new menu messages
+                for (var newMessage in newMessages) {
+                  if (newMessage
+                      .contains("Here's your new weekly meal plan:")) {
+                    if (!messages.contains(newMessage)) {
+                      messages.add(newMessage);
+                    }
+                  }
+                }
               } else {
-                messages.clear();
-                messages.addAll(newMessages.reversed);
+                // Add new messages if they are not already in the list and not related to the menu
+                for (var newMessage in newMessages) {
+                  if (!messages.contains(newMessage) &&
+                      !newMessage
+                          .contains("Here's your new weekly meal plan:")) {
+                    messages.add(newMessage);
+                  }
+                }
               }
             });
           } else {
@@ -113,7 +141,38 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
   }
 
   void regenerateMenu() {
-    sendMessage("Please regenerate the menu", userInitiated: false);
+    String uniqueRegenIdentifier =
+        "Regen-${DateTime.now().millisecondsSinceEpoch}";
+
+    // Remove the old menu immediately when regeneration is requested
+    setState(() {
+      messages.removeWhere((msg) =>
+          msg.contains("Here's your weekly meal plan:") ||
+          msg.contains("Here's your new weekly meal plan:"));
+    });
+
+    // Find the last menu message index for potential placeholder placement
+    int regenerateIndex = messages.lastIndexWhere((msg) =>
+        msg.contains("Here's your weekly meal plan:") ||
+        msg.contains("Here's your new weekly meal plan:"));
+
+    if (regenerateIndex != -1) {
+      // Place the placeholder at the position of the old menu
+      setState(() {
+        messages.insert(regenerateIndex, 'Assistant: Regenerating menu...');
+      });
+    } else {
+      // If no old menu is found, append the placeholder at the end
+      setState(() {
+        messages.add('Assistant: Regenerating menu...');
+      });
+    }
+
+    // Send the message to regenerate the menu without adding it to the messages list
+    sendMessage(
+        "Please regenerate the menu, identifier: $uniqueRegenIdentifier",
+        userInitiated: false,
+        addToMessages: false);
   }
 
   @override
@@ -126,19 +185,49 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
               itemCount: messages.isNotEmpty ? messages.length : 1,
               itemBuilder: (context, index) {
                 if (messages.isEmpty) {
-                  // Your existing code for the empty message state
-                  // ...
+                  return Center(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                          bottom: 5.0, right: 16.0, left: 16.0, top: 200.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons
+                                .eco, // Use a relevant icon, in this case, 'eco' for leaf
+                            size: 100.0,
+                            color: Colors.green,
+                          ),
+                          SizedBox(height: 16.0),
+                          Text(
+                            'Hello! Im your personal nutritionist.\nWe will develop a weekly meal plan specialized just for you!\nGive me some details about your weight, height, sex, activity level, and your goals.',
+                            style: Theme.of(context).textTheme.bodyText1,
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
                 } else {
-                  bool isWeeklyMenuMessage = messages[index].contains("Here's your weekly meal plan:") || messages[index].contains("Here's your new weekly meal plan:");
+                  bool isWeeklyMenuMessage = messages[index]
+                          .contains("Here's your weekly meal plan:") ||
+                      messages[index]
+                          .contains("Here's your new weekly meal plan:");
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 5.0, right: 16.0, left: 16.0, top: 5.0),
+                    padding: const EdgeInsets.only(
+                        bottom: 5.0, right: 16.0, left: 16.0, top: 5.0),
                     child: Column(
                       children: [
                         Container(
-                          child: ListTile(title: Text(messages[index], style: AppTheme.darkTextTheme.bodyText1)),
+                          child: ListTile(
+                              title: Text(messages[index],
+                                  style: AppTheme.darkTextTheme.bodyText1)),
                           margin: const EdgeInsets.symmetric(vertical: 5.0),
-                          padding: const EdgeInsets.only(bottom: 5.0, right: 16.0, left: 16.0, top: 5.0),
-                          decoration: BoxDecoration(color: Colors.grey[800], borderRadius: BorderRadius.circular(8.0)),
+                          padding: const EdgeInsets.only(
+                              bottom: 5.0, right: 16.0, left: 16.0, top: 5.0),
+                          decoration: BoxDecoration(
+                              color: Colors.grey[800],
+                              borderRadius: BorderRadius.circular(8.0)),
                         ),
                         if (isWeeklyMenuMessage)
                           Row(
@@ -158,7 +247,8 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(bottom: 16.0, right: 16.0, left: 16.0),
+            padding:
+                const EdgeInsets.only(bottom: 16.0, right: 16.0, left: 16.0),
             child: TextField(
               controller: _controller,
               decoration: InputDecoration(
