@@ -20,8 +20,7 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
   final AddUserMessageService _addUserMessageService = AddUserMessageService();
   final RunThreadService _runThreadService = RunThreadService();
   final CheckRunStatusService _checkRunStatusService = CheckRunStatusService();
-  final RetrieveRunStepsService _retrieveRunStepsService =
-      RetrieveRunStepsService();
+  final RetrieveRunStepsService _retrieveRunStepsService = RetrieveRunStepsService();
   final GetMessagesService _getMessagesService = GetMessagesService();
 
   final TextEditingController _controller = TextEditingController();
@@ -236,9 +235,7 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              SaveButton(onSave: () {
-                                // TODO: Implement save functionality
-                              }),
+                              SaveButton(menuMessage: messages[index]),
                               RegenButton(onRegenerate: regenerateMenu),
                             ],
                           ),

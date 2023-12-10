@@ -24,7 +24,7 @@ class Home extends StatefulWidget {
 class HomeState extends State<Home> {
   static List<Widget> pages = <Widget>[
     const ExploreScreen(),
-    const DishesScreen(),
+    DishesScreen(menuData: {/* your default menu data here */}), // Ensure proper data is passed
     GptNutritionScreen(),
   ];
 
@@ -34,13 +34,13 @@ class HomeState extends State<Home> {
     await Auth().signOut();
   }
 
-  Widget _signOutButton(){
+  Widget _signOutButton() {
     return IconButton(
-        icon: const Icon(Icons.logout),
-            onPressed: () {
-              Provider.of<AppStateManager>(context, listen: false).logout();
-              signOut();
-            },
+      icon: const Icon(Icons.logout),
+      onPressed: () {
+        Provider.of<AppStateManager>(context, listen: false).logout();
+        signOut();
+      },
     );
   }
 
@@ -96,4 +96,3 @@ class HomeState extends State<Home> {
     );
   }
 }
-
