@@ -28,6 +28,7 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
   List<String> messages = [];
   late String threadId;
   bool isLoading = false;
+  bool isAssistantTyping = false; // New state variable
 
   @override
   void initState() {
@@ -53,12 +54,19 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
       });
     }
 
-    setState(() => isLoading = true);
+    setState(() {
+      isLoading = true;
+      isAssistantTyping = true; // Assistant starts typing
+    });
 
     await _addUserMessageService.addUserMessage(threadId, message);
     final runThreadResponse = await _runThreadService.runThread(threadId);
     if (runThreadResponse.statusCode != 200) {
       // Handle error
+      setState(() {
+        isLoading = false;
+        isAssistantTyping = false; // Assistant stops typing
+      });
       return;
     }
     final runId = json.decode(runThreadResponse.body)['id'];
@@ -95,7 +103,6 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
 
             setState(() {
               if (isMenuRegenerated) {
-                // Collect messages to be removed in a separate list
                 var messagesToRemove = messages
                     .where((m) =>
                         m.contains("Here's your weekly meal plan:") ||
@@ -103,10 +110,8 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
                         m.contains('Assistant: Regenerating menu...'))
                     .toList();
 
-                // Remove the collected messages
                 messages.removeWhere((m) => messagesToRemove.contains(m));
 
-                // Add only the new menu messages
                 for (var newMessage in newMessages) {
                   if (newMessage
                       .contains("Here's your new weekly meal plan:")) {
@@ -116,7 +121,6 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
                   }
                 }
               } else {
-                // Add new messages if they are not already in the list and not related to the menu
                 for (var newMessage in newMessages) {
                   if (!messages.contains(newMessage) &&
                       !newMessage
@@ -125,16 +129,20 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
                   }
                 }
               }
+              isAssistantTyping = false; // Assistant stops typing
             });
           } else {
-            // Handle error in getting messages
-            setState(() => messages.add('Error: Failed to get messages.'));
+            setState(() {
+              messages.add('Error: Failed to get messages.');
+              isAssistantTyping = false; // Assistant stops typing
+            });
           }
         }
       } else {
-        // Handle error in checking run status
-        setState(() => messages.add('Error: Failed to check run status.'));
-        break;
+        setState(() {
+          messages.add('Error: Failed to check run status.');
+          isAssistantTyping = false; // Assistant stops typing
+        });
       }
     }
     setState(() => isLoading = false);
@@ -144,31 +152,26 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
     String uniqueRegenIdentifier =
         "Regen-${DateTime.now().millisecondsSinceEpoch}";
 
-    // Remove the old menu immediately when regeneration is requested
     setState(() {
       messages.removeWhere((msg) =>
           msg.contains("Here's your weekly meal plan:") ||
           msg.contains("Here's your new weekly meal plan:"));
     });
 
-    // Find the last menu message index for potential placeholder placement
     int regenerateIndex = messages.lastIndexWhere((msg) =>
         msg.contains("Here's your weekly meal plan:") ||
         msg.contains("Here's your new weekly meal plan:"));
 
     if (regenerateIndex != -1) {
-      // Place the placeholder at the position of the old menu
       setState(() {
         messages.insert(regenerateIndex, 'Assistant: Regenerating menu...');
       });
     } else {
-      // If no old menu is found, append the placeholder at the end
       setState(() {
         messages.add('Assistant: Regenerating menu...');
       });
     }
 
-    // Send the message to regenerate the menu without adding it to the messages list
     sendMessage(
         "Please regenerate the menu, identifier: $uniqueRegenIdentifier",
         userInitiated: false,
@@ -246,6 +249,20 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
               },
             ),
           ),
+          if (isAssistantTyping &&
+              !messages.any(
+                  (msg) => msg.contains('Assistant: Regenerating menu...')))
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  CircularProgressIndicator(),
+                  SizedBox(width: 10),
+                  Text('Assistant is typing...')
+                ],
+              ),
+            ),
           Padding(
             padding:
                 const EdgeInsets.only(bottom: 16.0, right: 16.0, left: 16.0),
