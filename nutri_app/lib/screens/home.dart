@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../auth.dart';
 import 'export_screens.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Home extends StatefulWidget {
   Home({
@@ -27,11 +28,44 @@ class HomeState extends State<Home> {
     const ProfileScreen(),
   ];
 
+  late Future<String> _userPhotoFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _userPhotoFuture = getUserPhoto();
+  }
+
   final User? user = Auth().currentUser;
+  String profilePicLink = "";
 
   Future<void> signOut() async {
     await Auth().signOut();
   }
+
+  Future<String> getUserPhoto() async {
+  User? user = FirebaseAuth.instance.currentUser;
+  if (user != null) {
+    QuerySnapshot mediaSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('media')
+        .get();
+
+    if (mediaSnapshot.docs.isNotEmpty) {
+      var mediaData = mediaSnapshot.docs.first.data() as Map<String, dynamic>;
+      if (mediaData['profile_pic_url'] != null) {
+        print('Got profile_pic_url'); 
+        if (mounted) {
+        setState(() {
+          profilePicLink = mediaData['profile_pic_url'];
+        });
+        }
+      }
+    }
+  }
+  return profilePicLink;
+}
 
   @override
   Widget build(BuildContext context) {
@@ -74,18 +108,30 @@ class HomeState extends State<Home> {
   Widget profileButton(int currentTab, BuildContext context) {
   return Padding(
     padding: const EdgeInsets.only(right: 16.0),
-    child: GestureDetector(
-      child: const CircleAvatar(
-        backgroundColor: Colors.white,
-        // Add a child widget to the CircleAvatar if you want to display the user's profile picture
-        // child: Image.network(userProfileImageUrl),
+    child: FutureBuilder<String>(
+      future: _userPhotoFuture,
+      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator(); // Show a loading spinner while waiting for the photo
+        } else if (snapshot.hasError) {
+          return Container(); // Show an empty Container if an error occurred
+        } else {
+          return GestureDetector(
+            child: CircleAvatar(
+              backgroundColor: Colors.white,
+              backgroundImage: snapshot.data!.isEmpty
+                  ? null
+                  : NetworkImage(snapshot.data!), // Load the profile photo if it exists
+            ),
+            onTap: () {
+              // Navigate to profile screen
+              context.go('/profile');
+              },
+            );
+          }
+        },
       ),
-      onTap: () {
-        // Navigate to profile screen
-        context.goNamed('profile');
-      },
-    ),
-  );
-}
+    );
+  }
 }
 
