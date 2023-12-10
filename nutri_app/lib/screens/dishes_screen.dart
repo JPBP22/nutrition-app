@@ -30,19 +30,10 @@ class DishesScreen extends StatelessWidget {
             children: snapshot.data!.docs.map((DocumentSnapshot document) {
               Map<String, dynamic> data =
                   document.data() as Map<String, dynamic>;
-
-              // Assuming 'menu' is a field within the document that contains an array
-// And that you're trying to access the first 'data' array within it
               Map<String, dynamic> menuData =
                   data['menu']['data'][0] as Map<String, dynamic>;
-
-// Assuming 'content' is an array within the 'data' field of 'menu'
-// And that 'text' is an array within the first element of 'content'
-// And 'annotations' is an array within the first element of 'text'
               String weekMenuString =
                   menuData['content'][0]['text']['value'] as String;
-
-              // Parse the string to get the actual JSON object
               var weekMenu = json.decode(weekMenuString);
 
               return Column(
@@ -53,10 +44,28 @@ class DishesScreen extends StatelessWidget {
                   return ExpansionTile(
                     title: Text(day),
                     children: meals.map<Widget>((mealData) {
-                      return ListTile(
-                        title: Text(mealData['recipe']),
-                        subtitle: Text(mealData['meal']),
-                        // Implement your logic to display ingredients here
+                      return ExpansionTile(
+                        // Updated title with meal type and recipe name
+                        title: Row(
+                          children: [
+                            Text(mealData['meal'] + ': '),
+                            Expanded(
+                              child: Text(
+                                mealData['recipe'],
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        children: mealData['ingredients'] != null
+                            ? (mealData['ingredients'] as Map<String, dynamic>)
+                                .entries
+                                .map<Widget>((entry) {
+                                return ListTile(
+                                  title: Text("${entry.key}: ${entry.value}"),
+                                );
+                              }).toList()
+                            : [ListTile(title: Text('No ingredients listed'))],
                       );
                     }).toList(),
                   );
