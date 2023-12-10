@@ -23,7 +23,7 @@ class Home extends StatefulWidget {
 class HomeState extends State<Home> {
   static List<Widget> pages = <Widget>[
     const ExploreScreen(),
-    const DishesScreen(),
+    DishesScreen(),
     GptNutritionScreen(),
     const ProfileScreen(),
   ];
@@ -44,88 +44,87 @@ class HomeState extends State<Home> {
   }
 
   Future<String> getUserPhoto() async {
-  User? user = FirebaseAuth.instance.currentUser;
-  if (user != null) {
-    QuerySnapshot mediaSnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .collection('media')
-        .get();
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      QuerySnapshot mediaSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('media')
+          .get();
 
-    if (mediaSnapshot.docs.isNotEmpty) {
-      var mediaData = mediaSnapshot.docs.first.data() as Map<String, dynamic>;
-      if (mediaData['profile_pic_url'] != null) {
-        print('Got profile_pic_url'); 
-        if (mounted) {
-        setState(() {
-          profilePicLink = mediaData['profile_pic_url'];
-        });
+      if (mediaSnapshot.docs.isNotEmpty) {
+        var mediaData = mediaSnapshot.docs.first.data() as Map<String, dynamic>;
+        if (mediaData['profile_pic_url'] != null) {
+          print('Got profile_pic_url');
+          if (mounted) {
+            setState(() {
+              profilePicLink = mediaData['profile_pic_url'];
+            });
+          }
         }
       }
     }
+    return profilePicLink;
   }
-  return profilePicLink;
-}
 
   @override
   Widget build(BuildContext context) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            'NutriApp',
-            style: Theme.of(context).textTheme.headline6,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'NutriApp',
+          style: Theme.of(context).textTheme.headline6,
+        ),
+        actions: <Widget>[profileButton(widget.currentTab, context)],
+      ),
+      body: IndexedStack(index: widget.currentTab, children: pages),
+      bottomNavigationBar: BottomNavigationBar(
+        selectedItemColor: Theme.of(context).textSelectionTheme.selectionColor,
+        currentIndex: widget.currentTab,
+        onTap: (index) {
+          Provider.of<AppStateManager>(context, listen: false).goToTab(index);
+          context.goNamed('home', params: {'tab': '$index'});
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.explore),
+            label: 'Explore',
           ),
-          actions: <Widget>[
-            profileButton(widget.currentTab, context)
-          ],
-        ),
-        body: IndexedStack(index: widget.currentTab, children: pages),
-        bottomNavigationBar: BottomNavigationBar(
-          selectedItemColor: Theme.of(context).textSelectionTheme.selectionColor,
-          currentIndex: widget.currentTab,
-          onTap: (index) {
-            Provider.of<AppStateManager>(context, listen: false).goToTab(index);
-            context.goNamed('home', params: {'tab': '$index'});
-          },
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.explore),
-              label: 'Explore',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.local_dining_outlined),
-              label: 'Recipes',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(CustomIcons.gpt_logo),
-              label: 'GPT Nutritionist',
-            ),
-          ],
-        ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.local_dining_outlined),
+            label: 'Recipes',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CustomIcons.gpt_logo),
+            label: 'GPT Nutritionist',
+          ),
+        ],
+      ),
     );
   }
 
   Widget profileButton(int currentTab, BuildContext context) {
-  return Padding(
-    padding: const EdgeInsets.only(right: 16.0),
-    child: FutureBuilder<String>(
-      future: _userPhotoFuture,
-      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator(); // Show a loading spinner while waiting for the photo
-        } else if (snapshot.hasError) {
-          return Container(); // Show an empty Container if an error occurred
-        } else {
-          return GestureDetector(
-            child: CircleAvatar(
-              backgroundColor: Colors.white,
-              backgroundImage: snapshot.data!.isEmpty
-                  ? null
-                  : NetworkImage(snapshot.data!), // Load the profile photo if it exists
-            ),
-            onTap: () {
-              // Navigate to profile screen
-              context.go('/profile');
+    return Padding(
+      padding: const EdgeInsets.only(right: 16.0),
+      child: FutureBuilder<String>(
+        future: _userPhotoFuture,
+        builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const CircularProgressIndicator(); // Show a loading spinner while waiting for the photo
+          } else if (snapshot.hasError) {
+            return Container(); // Show an empty Container if an error occurred
+          } else {
+            return GestureDetector(
+              child: CircleAvatar(
+                backgroundColor: Colors.white,
+                backgroundImage: snapshot.data!.isEmpty
+                    ? null
+                    : NetworkImage(
+                        snapshot.data!), // Load the profile photo if it exists
+              ),
+              onTap: () {
+                // Navigate to profile screen
+                context.go('/profile');
               },
             );
           }
@@ -134,4 +133,3 @@ class HomeState extends State<Home> {
     );
   }
 }
-

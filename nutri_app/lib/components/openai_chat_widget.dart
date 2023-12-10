@@ -236,9 +236,7 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              SaveButton(onSave: () {
-                                // TODO: Implement save functionality
-                              }),
+                              SaveButton(menuMessage: messages[index]),
                               RegenButton(onRegenerate: regenerateMenu),
                             ],
                           ),
