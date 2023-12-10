@@ -9,7 +9,7 @@ class RegenButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       onPressed: onRegenerate,
-      child: Text('Regenerate'),
+      child: Text('Regenerate Menu'),
     );
   }
 }

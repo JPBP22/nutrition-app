@@ -9,7 +9,7 @@ class SaveButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       onPressed: onSave,
-      child: Text('Save'),
+      child: Text('Save Menu'),
     );
   }
 }
