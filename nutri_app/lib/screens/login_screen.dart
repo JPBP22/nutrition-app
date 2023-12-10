@@ -221,7 +221,7 @@ class _LoginPageState extends State<LoginPage> {
               _textFieldEmail('Email', _emailController),
               SizedBox(height: 20),
               _textFieldPassword('Password', _passwordController),
-              SizedBox(height: 10),
+              SizedBox(height: 20),
               if (!isLogin) ...[
                 _textFieldConfirmPassword('Confirm Password', _confirmPasswordController),
                 SizedBox(height: 20),

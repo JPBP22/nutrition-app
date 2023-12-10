@@ -6,6 +6,7 @@ class NutriAppTab {
   static const int explore = 0;
   static const int dishes = 1;
   static const int gptNutrition = 2;
+  static const int userProfile = 3;
 }
 
 // AppStateManager mocks the various app state such as app initialization,
@@ -17,6 +18,8 @@ class AppStateManager extends ChangeNotifier {
   int _selectedTab = NutriAppTab.explore;
   // Stores user state properties on platform specific file system.
   final _appCache = AppCache();
+
+  int get selectedTab => _selectedTab;
 
   // Property getters.
   bool get isLoggedIn => _loggedIn;
