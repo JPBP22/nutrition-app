@@ -22,7 +22,7 @@ class Home extends StatefulWidget {
 
 class HomeState extends State<Home> {
   static List<Widget> pages = <Widget>[
-    const ExploreScreen(),
+    const ShoppingList(),
     DishesScreen(),
     GptNutritionScreen(),
     const ProfileScreen(),

@@ -19,15 +19,46 @@ class SaveButton extends StatefulWidget {
 }
 
 class _SaveButtonState extends State<SaveButton> {
+  bool isSaving = false;
+
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: () => _handleSave(context),
-      child: Text('Save Menu'),
+    return isSaving
+      ? const CircularProgressIndicator()
+      : ElevatedButton(
+        onPressed: () async {
+          setState(() {
+            isSaving = true; // Start saving
+          });
+         
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+          content: Text('The AI assistant is generating your weekly menu...'),
+          backgroundColor: Colors.green,
+        ),
+      );
+          final dialogContext = Navigator.of(context, rootNavigator: true).context;
+          String menuName = await showDialog(
+          context: dialogContext,
+          builder: (dialogContext) => Dialog(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Enter a name for the menu:'), // Instruction for the user.
+                TextField(
+                  onSubmitted: (value) => Navigator.pop(dialogContext, value),
+                ),
+              ],
+            ),
+          ),
+        );
+        _handleSave(context, menuName);
+      },
+      child: const Text('Save Menu'),
     );
   }
 
-  void _handleSave(BuildContext context) async {
+  void _handleSave(BuildContext context, String menuName) async {
     try {
       final createThreadResponse = await CreateThreadService().createThread();
       if (createThreadResponse.statusCode != 200) {
@@ -44,16 +75,27 @@ class _SaveButtonState extends State<SaveButton> {
       }
       final runId = json.decode(runThreadResponse.body)['id'];
 
-      await _waitForResponse(threadId, runId, context);
+      await _waitForResponse(threadId, runId, context, menuName);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    } finally {
+      setState(() {
+        isSaving = false; // Finish saving
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+          content: Text('Menu has been succesfully saved!'),
+          backgroundColor: Colors.green,
+        ),
       );
     }
   }
 
   Future<void> _waitForResponse(
-      String threadId, String runId, BuildContext context) async {
+      String threadId, String runId, BuildContext context, String menuName) async {
     bool isCompleted = false;
     while (!isCompleted) {
       await Future.delayed(Duration(seconds: 2)); // Polling delay
@@ -76,9 +118,13 @@ class _SaveButtonState extends State<SaveButton> {
             .collection('users')
             .doc(userId)
             .collection('menus');
+
+        print('Menu Name: $menuName');
+        
         menus.add({
           'menu': jsonResponse,
           'created_at': DateTime.now(),
+          'name': menuName,
         });
       }
     }

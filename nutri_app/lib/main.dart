@@ -5,6 +5,7 @@ import 'app_theme.dart';
 import 'models/models.dart';
 import 'navigation/app_router.dart';
 
+
   void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();

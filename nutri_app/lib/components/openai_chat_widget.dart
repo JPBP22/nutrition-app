@@ -9,6 +9,8 @@ import '../service/get_messages_service.dart';
 import '../app_theme.dart';
 import 'save_button.dart'; // Importing the Save button component
 import 'regen_button.dart'; // Importing the Regenerate button component
+import 'package:intl/intl.dart';
+import '../models/message.dart';
 
 class OpenAIChatWidget extends StatefulWidget {
   @override
@@ -25,7 +27,7 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
   final GetMessagesService _getMessagesService = GetMessagesService();
 
   final TextEditingController _controller = TextEditingController();
-  List<String> messages = [];
+  List<Message> messages = [];
   late String threadId;
   bool isLoading = false;
   bool isAssistantTyping = false; // New state variable
@@ -49,7 +51,7 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
       {bool userInitiated = true, bool addToMessages = true}) async {
     if (userInitiated && addToMessages) {
       setState(() {
-        messages.add('You: $message');
+        messages.add(Message('You: $message', DateTime.now()));
         _controller.clear();
       });
     }
@@ -84,19 +86,20 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
               await _getMessagesService.getMessages(threadId);
           if (getMessagesResponse.statusCode == 200) {
             final decodedResponse = json.decode(getMessagesResponse.body);
-            List<String> newMessages = [];
+            List<Message> newMessages = [];
             bool isMenuRegenerated = false;
 
             for (var msg in decodedResponse['data']) {
               final content = msg['content'].last['text']['value'];
               if (msg['role'] == 'assistant' && content.isNotEmpty) {
-                String assistantMessage = 'Assistant: $content';
+                String assistantText = 'Assistant: $content';
 
                 // Check if the message is a regenerated menu
                 if (content.contains("Here's your new weekly meal plan:")) {
                   isMenuRegenerated = true;
                 }
 
+                Message assistantMessage = Message(assistantText, DateTime.now());
                 newMessages.add(assistantMessage);
               }
             }
@@ -105,27 +108,27 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
               if (isMenuRegenerated) {
                 var messagesToRemove = messages
                     .where((m) =>
-                        m.contains("Here's your weekly meal plan:") ||
-                        m.contains("Here's your new weekly meal plan:") ||
-                        m.contains('Assistant: Regenerating menu...'))
+                        m.message.contains("Here's your weekly meal plan:") ||
+                        m.message.contains("Here's your new weekly meal plan:") ||
+                        m.message.contains('Assistant: Regenerating menu...'))
                     .toList();
 
                 messages.removeWhere((m) => messagesToRemove.contains(m));
 
                 for (var newMessage in newMessages) {
-                  if (newMessage
+                  if (newMessage.message
                       .contains("Here's your new weekly meal plan:")) {
                     if (!messages.contains(newMessage)) {
-                      messages.add(newMessage);
+                      messages.add(Message(newMessage.message, DateTime.now()));
                     }
                   }
                 }
               } else {
                 for (var newMessage in newMessages) {
                   if (!messages.contains(newMessage) &&
-                      !newMessage
+                      !newMessage.message
                           .contains("Here's your new weekly meal plan:")) {
-                    messages.add(newMessage);
+                    messages.add(Message(newMessage.message, DateTime.now()));
                   }
                 }
               }
@@ -133,14 +136,14 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
             });
           } else {
             setState(() {
-              messages.add('Error: Failed to get messages.');
+              messages.add(Message('Error: Failed to get messages.', DateTime.now()));
               isAssistantTyping = false; // Assistant stops typing
             });
           }
         }
       } else {
         setState(() {
-          messages.add('Error: Failed to check run status.');
+          messages.add(Message('Error: Failed to check run status.', DateTime.now()));
           isAssistantTyping = false; // Assistant stops typing
         });
       }
@@ -154,21 +157,21 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
 
     setState(() {
       messages.removeWhere((msg) =>
-          msg.contains("Here's your weekly meal plan:") ||
-          msg.contains("Here's your new weekly meal plan:"));
+          msg.message.contains("Here's your weekly meal plan:") ||
+          msg.message.contains("Here's your new weekly meal plan:"));
     });
 
     int regenerateIndex = messages.lastIndexWhere((msg) =>
-        msg.contains("Here's your weekly meal plan:") ||
-        msg.contains("Here's your new weekly meal plan:"));
+        msg.message.contains("Here's your weekly meal plan:") ||
+        msg.message.contains("Here's your new weekly meal plan:"));
 
     if (regenerateIndex != -1) {
       setState(() {
-        messages.insert(regenerateIndex, 'Assistant: Regenerating menu...');
+        messages.insert(regenerateIndex, Message('Assistant: Regenerating menu...', DateTime.now()));
       });
     } else {
       setState(() {
-        messages.add('Assistant: Regenerating menu...');
+        messages.add(Message('Assistant: Regenerating menu...', DateTime.now()));
       });
     }
 
@@ -190,18 +193,18 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
                 if (messages.isEmpty) {
                   return Center(
                     child: Padding(
-                      padding: EdgeInsets.only(
+                      padding: const EdgeInsets.only(
                           bottom: 5.0, right: 16.0, left: 16.0, top: 200.0),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
+                          const Icon(
                             Icons
                                 .eco, // Use a relevant icon, in this case, 'eco' for leaf
                             size: 100.0,
                             color: Colors.green,
                           ),
-                          SizedBox(height: 16.0),
+                          const SizedBox(height: 16.0),
                           Text(
                             'Hello! Im your personal nutritionist.\nWe will develop a weekly meal plan specialized just for you!\nGive me some details about your weight, height, sex, activity level, and your goals.',
                             style: Theme.of(context).textTheme.bodyText1,
@@ -212,33 +215,56 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
                     ),
                   );
                 } else {
-                  bool isWeeklyMenuMessage = messages[index]
-                          .contains("Here's your weekly meal plan:") ||
-                      messages[index]
-                          .contains("Here's your new weekly meal plan:");
+                  bool isUserMessage = messages[index].message.startsWith('You: ');
+                  bool isWeeklyMenuMessage = messages[index].
+                          message.contains("Here's your weekly meal plan:") ||
+                      messages[index].
+                          message.contains("Here's your new weekly meal plan:");
+                  DateTime timestamp = messages[index].timestamp;
                   return Padding(
                     padding: const EdgeInsets.only(
-                        bottom: 5.0, right: 16.0, left: 16.0, top: 5.0),
+                    bottom: 5.0, right: 16.0, left: 16.0, top: 5.0),
                     child: Column(
                       children: [
-                        Container(
-                          child: ListTile(
-                              title: Text(messages[index],
-                                  style: AppTheme.darkTextTheme.bodyText1)),
-                          margin: const EdgeInsets.symmetric(vertical: 5.0),
-                          padding: const EdgeInsets.only(
-                              bottom: 5.0, right: 16.0, left: 16.0, top: 5.0),
-                          decoration: BoxDecoration(
-                              color: Colors.grey[800],
-                              borderRadius: BorderRadius.circular(8.0)),
+                        Align(
+                          alignment: isUserMessage ? Alignment.centerRight : Alignment.centerLeft,
+                          child: Container(
+                            constraints: BoxConstraints(
+                              maxWidth: MediaQuery.of(context).size.width * 0.8, // 80% of screen width
+                            ),
+                            child: Column(
+                              crossAxisAlignment: isUserMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  messages[index].message,
+                                  style: AppTheme.darkTextTheme.bodyLarge,
+                                  textAlign: isUserMessage ? TextAlign.right : TextAlign.left,
+                                ),
+                                const SizedBox(height: 10.0),
+                                Text(
+                                  DateFormat('hh:mm a').format(timestamp),
+                                  textAlign: TextAlign.right,
+                                ),
+                              ],
+                            ),
+                            margin: const EdgeInsets.symmetric(vertical: 5.0),
+                            padding: const EdgeInsets.only(
+                                bottom: 5.0, right: 16.0, left: 16.0, top: 5.0),
+                            decoration: BoxDecoration(
+                                color: isUserMessage ? Color.fromARGB(255, 30, 148, 245) : Colors.grey[800],
+                                borderRadius: BorderRadius.circular(8.0)),
+                          ),
                         ),
                         if (isWeeklyMenuMessage)
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              SaveButton(menuMessage: messages[index]),
-                              RegenButton(onRegenerate: regenerateMenu),
-                            ],
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                SaveButton(menuMessage: messages[index].message),
+                                RegenButton(onRegenerate: regenerateMenu),
+                              ],
+                            ),
                           ),
                       ],
                     ),
@@ -249,12 +275,12 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
           ),
           if (isAssistantTyping &&
               !messages.any(
-                  (msg) => msg.contains('Assistant: Regenerating menu...')))
-            Padding(
+                  (msg) => msg.message.contains('Assistant: Regenerating menu...')))
+            const Padding(
               padding: const EdgeInsets.symmetric(vertical: 10.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
+                children: [
                   CircularProgressIndicator(),
                   SizedBox(width: 10),
                   Text('Assistant is typing...')
