@@ -1,21 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'app_theme.dart';
-import 'models/models.dart';
-import 'navigation/app_router.dart';
+import 'package:provider/provider.dart'; // Importing the Provider package for state management.
+import 'package:firebase_core/firebase_core.dart'; // Importing Firebase core package for Firebase initialization.
+import 'app_theme.dart'; // Importing the application's theme settings.
+import 'models/models.dart'; // Importing the models used in the application.
+import 'navigation/app_router.dart'; // Importing the app router for navigation.
 
-
-  void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  final appStateManager = AppStateManager();
-  await appStateManager.initializeApp();
-  runApp(NutriApp(appStateManager: appStateManager));
+// Main entry point of the application.
+void main() async {
+  WidgetsFlutterBinding
+      .ensureInitialized(); // Ensuring that Flutter widgets are initialized.
+  await Firebase.initializeApp(); // Initializing Firebase.
+  final appStateManager =
+      AppStateManager(); // Creating an instance of AppStateManager.
+  await appStateManager.initializeApp(); // Initializing the application state.
+  runApp(NutriApp(
+      appStateManager: appStateManager)); // Running the NutriApp widget.
 }
 
+// StatefulWidget representing the NutriApp.
 class NutriApp extends StatefulWidget {
-  final AppStateManager appStateManager;
+  final AppStateManager
+      appStateManager; // AppStateManager instance for managing app state.
 
   const NutriApp({super.key, required this.appStateManager});
 
@@ -23,26 +28,31 @@ class NutriApp extends StatefulWidget {
   NutriAppState createState() => NutriAppState();
 }
 
+// State class for NutriApp.
 class NutriAppState extends State<NutriApp> {
-
+  // Initializing the AppRouter.
   late final _appRouter = AppRouter(
     widget.appStateManager,
   );
 
   @override
   Widget build(BuildContext context) {
+    // Using MultiProvider for state management across the app.
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
           create: (context) => widget.appStateManager,
         ),
+        // Additional providers can be added here.
       ],
       child: Builder(
         builder: (context) {
           final router = _appRouter.router;
+          // MaterialApp.router for integrating the router with the app's navigation.
           return MaterialApp.router(
-            theme: AppTheme.dark(),
-            title: 'NutriApp',
+            theme: AppTheme.dark(), // Applying the dark theme from AppTheme.
+            title: 'NutriApp', // Setting the app title.
+            // Setting up the router for navigation.
             routeInformationParser: router.routeInformationParser,
             routeInformationProvider: router.routeInformationProvider,
             routerDelegate: router.routerDelegate,

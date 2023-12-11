@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
+  // Defining the light and dark themes for the app.
   static TextTheme lightTextTheme = TextTheme(
     bodyText1: GoogleFonts.openSans(
       fontSize: 14.0,
@@ -67,9 +68,9 @@ class AppTheme {
         }),
       ),
       inputDecorationTheme: InputDecorationTheme(
-      border: OutlineInputBorder(
-        borderSide: const BorderSide(width: 80.0, color:Colors.green),
-        borderRadius: BorderRadius.circular(10.0),
+        border: OutlineInputBorder(
+          borderSide: const BorderSide(width: 80.0, color: Colors.green),
+          borderRadius: BorderRadius.circular(10.0),
         ),
       ),
       appBarTheme: const AppBarTheme(
@@ -95,9 +96,9 @@ class AppTheme {
         backgroundColor: Colors.grey[900],
       ),
       inputDecorationTheme: InputDecorationTheme(
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10.0),
-        borderSide: const BorderSide(color: Colors.green),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10.0),
+          borderSide: const BorderSide(color: Colors.green),
         ),
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
