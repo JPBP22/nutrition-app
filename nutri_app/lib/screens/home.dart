@@ -23,9 +23,16 @@ class Home extends StatefulWidget {
 class HomeState extends State<Home> {
   static List<Widget> pages = <Widget>[
     const ShoppingList(),
-    DishesScreen(),
+    const WeeklyMenu(),
     GptNutritionScreen(),
     const ProfileScreen(),
+  ];
+
+  static List<String> pageTitles = <String>[
+    'Shopping List',
+    'Weekly Menu',
+    'GPT Nutritionist',
+    'Profile',
   ];
 
   late Future<String> _userPhotoFuture;
@@ -72,7 +79,7 @@ class HomeState extends State<Home> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'NutriApp',
+          pageTitles[widget.currentTab],
           style: Theme.of(context).textTheme.headline6,
         ),
         actions: <Widget>[profileButton(widget.currentTab, context)],
@@ -87,12 +94,12 @@ class HomeState extends State<Home> {
         },
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.explore),
-            label: 'Explore',
+            icon: Icon(Icons.shopping_cart),
+            label: 'Shopping List',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.local_dining_outlined),
-            label: 'Recipes',
+            label: 'Weekly Menu',
           ),
           BottomNavigationBarItem(
             icon: Icon(CustomIcons.gpt_logo),

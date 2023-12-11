@@ -3,10 +3,9 @@ import 'package:flutter/material.dart';
 import 'models.dart';
 
 class NutriAppTab {
-  static const int explore = 0;
-  static const int dishes = 1;
+  static const int shoppingList = 0;
+  static const int weeklyMenu = 1;
   static const int gptNutrition = 2;
-  static const int userProfile = 3;
 }
 
 // AppStateManager mocks the various app state such as app initialization,
@@ -15,7 +14,7 @@ class AppStateManager extends ChangeNotifier {
   // Checks to see if the user is logged in
   bool _loggedIn = false;
   // Records the current tab the user is on.
-  int _selectedTab = NutriAppTab.explore;
+  int _selectedTab = NutriAppTab.shoppingList;
   // Stores user state properties on platform specific file system.
   final _appCache = AppCache();
 
@@ -43,7 +42,7 @@ class AppStateManager extends ChangeNotifier {
   }
 
   void goToDishes() {
-    _selectedTab = NutriAppTab.dishes;
+    _selectedTab = NutriAppTab.weeklyMenu;
     notifyListeners();
   }
 

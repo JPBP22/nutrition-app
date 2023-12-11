@@ -4,7 +4,6 @@ import '../service/create_thread_service.dart';
 import '../service/add_user_message_service.dart';
 import '../service/run_thread_service.dart';
 import '../service/check_run_status_service.dart';
-import '../service/retrieve_run_steps_service.dart';
 import '../service/get_messages_service.dart';
 import '../app_theme.dart';
 import 'save_button.dart'; // Importing the Save button component
@@ -22,8 +21,6 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
   final AddUserMessageService _addUserMessageService = AddUserMessageService();
   final RunThreadService _runThreadService = RunThreadService();
   final CheckRunStatusService _checkRunStatusService = CheckRunStatusService();
-  final RetrieveRunStepsService _retrieveRunStepsService =
-      RetrieveRunStepsService();
   final GetMessagesService _getMessagesService = GetMessagesService();
 
   final TextEditingController _controller = TextEditingController();

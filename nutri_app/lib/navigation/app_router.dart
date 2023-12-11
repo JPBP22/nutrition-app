@@ -40,13 +40,7 @@ class AppRouter {
               print('Navigating to tab: $tab');
               return Home(key: state.pageKey, currentTab: tab);
             },
-            routes: [
-              GoRoute(
-                name: 'iewebpage',
-                path: 'iewebpage',
-                builder: (context, state) => const WebViewScreen(),
-              )
-            ]),
+            ),
       ],
       errorPageBuilder: (context, state) {
         return MaterialPage(
@@ -64,7 +58,7 @@ class AppRouter {
         if (!loggedIn) return logginIn ? null : '/login';
         print('Redirect: loggedIn=$loggedIn, logginIn=$logginIn');
 
-        if (logginIn) return '/${NutriAppTab.explore}';
+        if (logginIn) return '/${NutriAppTab.weeklyMenu}';
 
         return null;
       });

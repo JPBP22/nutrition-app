@@ -5,7 +5,6 @@ import '../service/add_user_message_service.dart';
 import '../service/run_thread_service_json.dart';
 import '../service/check_run_status_service.dart';
 import '../service/get_messages_service.dart';
-import '../screens/dishes_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 

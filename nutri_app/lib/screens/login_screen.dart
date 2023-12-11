@@ -126,7 +126,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _showError(String errorMessage) {
-  SchedulerBinding.instance!.addPostFrameCallback((_) {
+  SchedulerBinding.instance.addPostFrameCallback((_) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('$errorMessage'),

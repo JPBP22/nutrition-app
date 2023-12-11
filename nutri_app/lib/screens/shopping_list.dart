@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'dart:convert';
 import 'package:flutter/scheduler.dart';
-import 'package:intl/intl.dart';
 
 class ShoppingList extends StatelessWidget {
   const ShoppingList({Key? key}) : super(key: key);
 
   void _deleteItemNotifier(BuildContext context) {
-    SchedulerBinding.instance!.addPostFrameCallback((_) {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Item removed from the shopping list successfully!'),
@@ -39,6 +37,19 @@ class ShoppingList extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
 
+          if (snapshot.data!.docs.isEmpty) {
+            // Display the placeholder
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.shopping_cart, size: 80, color: Colors.grey),
+                  Text('Your shopping list is empty', style: TextStyle(color: Colors.grey, fontSize: 20)),
+                ],
+              ),
+            );
+          }
+          
           return ListView(
             padding: EdgeInsets.all(16),
             children: snapshot.data!.docs.map((DocumentSnapshot document) {
@@ -49,7 +60,13 @@ class ShoppingList extends StatelessWidget {
           return ListTile(
             title: Text('$ingredient'),
             subtitle: Text('Quantity: $quantity'),
-
+            trailing: IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: () async {
+                await document.reference.delete();
+                _deleteItemNotifier(context);
+                },
+              ),
               );
             }).toList(),
           );

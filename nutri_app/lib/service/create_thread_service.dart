@@ -1,6 +1,5 @@
 import 'package:http/http.dart' as http;
 import '../secrets.dart';
-import 'dart:convert';
 
 class CreateThreadService {
   final String _apiKey = Secrets.API_KEY;
