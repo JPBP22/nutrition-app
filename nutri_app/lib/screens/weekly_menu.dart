@@ -5,9 +5,16 @@ import 'dart:convert';
 import 'package:flutter/scheduler.dart';
 import 'package:intl/intl.dart';
 
-// Declaring the WeeklyMenu widget which is a StatelessWidget.
-class WeeklyMenu extends StatelessWidget {
+// Declaring the WeeklyMenu widget which is a StatefulWidget.
+class WeeklyMenu extends StatefulWidget {
   const WeeklyMenu({Key? key}) : super(key: key);
+
+  @override
+  _WeeklyMenuState createState() => _WeeklyMenuState();
+}
+
+class _WeeklyMenuState extends State<WeeklyMenu> {
+  Map<String, bool> favouriteMenusMap = {};
 
   // Method to show a notification using a SnackBar after an item is saved.
   void _savedItemNotifier(BuildContext context) {
@@ -34,6 +41,10 @@ class WeeklyMenu extends StatelessWidget {
         .collection('users')
         .doc(userId)
         .collection('shopping_list');
+    CollectionReference favouriteMenus = FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('favourite_menus');
 
     // Asynchronous method to get the username from Firestore.
     Future<String> _getUserName() async {
@@ -42,6 +53,13 @@ class WeeklyMenu extends StatelessWidget {
           .doc(userId)
           .get();
       return userDoc['username'];
+    }
+
+    Future<void> _updateFavouriteMenus() async {
+      QuerySnapshot snapshot = await favouriteMenus.get();
+      setState(() {
+        favouriteMenusMap = {for (var doc in snapshot.docs) doc.id: true};
+      });
     }
 
     return FutureBuilder<String>(
@@ -104,6 +122,24 @@ class WeeklyMenu extends StatelessWidget {
                       elevation: 4,
                       margin: EdgeInsets.only(bottom: 16),
                       child: ExpansionTile(
+                        trailing: IconButton(
+                          icon: Icon(
+                            favouriteMenusMap[document.id] == true
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            color: favouriteMenusMap[document.id] == true
+                                ? Colors.red
+                                : null,
+                          ),
+                          onPressed: () async {
+                            if (favouriteMenusMap[document.id] == true) {
+                              await favouriteMenus.doc(document.id).delete();
+                            } else {
+                              await favouriteMenus.doc(document.id).set(data);
+                            }
+                            _updateFavouriteMenus();
+                          },
+                        ),
                         tilePadding: EdgeInsets.all(16),
                         leading: Icon(Icons.menu_book,
                             color: Colors.blue), // Menu icon
