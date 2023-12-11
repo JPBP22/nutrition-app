@@ -92,10 +92,12 @@ class HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          pageTitles[widget
-              .currentTab], // Sets the title of the AppBar based on the current tab.
-          style: Theme.of(context).textTheme.headline6,
+        title: Center(
+          child: Text(
+            pageTitles[widget
+                .currentTab], // Sets the title of the AppBar based on the current tab.
+            style: Theme.of(context).textTheme.headline6,
+          ),
         ),
         actions: <Widget>[
           profileButton(widget.currentTab, context)

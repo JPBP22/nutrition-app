@@ -9,7 +9,7 @@ class ShoppingList extends StatelessWidget {
 
   // Function to display a notification when an item is deleted
   void _deleteItemNotifier(BuildContext context) {
-    SchedulerBinding.instance!.addPostFrameCallback((_) {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Item removed from the shopping list successfully!'),
