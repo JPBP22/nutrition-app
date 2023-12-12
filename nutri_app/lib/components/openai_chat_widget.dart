@@ -5,7 +5,6 @@ import '../service/add_user_message_service.dart'; // Importing the Add User Mes
 import '../service/run_thread_service.dart'; // Importing the Run Thread service.
 import '../service/check_run_status_service.dart'; // Importing the Check Run Status service.
 import '../service/get_messages_service.dart'; // Importing the Get Messages service.
-import '../app_theme.dart'; // Importing application theme settings.
 import 'save_button.dart'; // Importing the Save button component.
 import 'regen_button.dart'; // Importing the Regenerate button component.
 import 'package:intl/intl.dart'; // Importing a package for date formatting.
@@ -279,7 +278,7 @@ class _OpenAIChatWidgetState extends State<OpenAIChatWidget> {
                               children: [
                                 Text(
                                   messages[index].message,
-                                  style: AppTheme.darkTextTheme.bodyLarge,
+                                  style: Theme.of(context).textTheme.bodyText1,
                                   textAlign: isUserMessage
                                       ? TextAlign.right
                                       : TextAlign.left,
