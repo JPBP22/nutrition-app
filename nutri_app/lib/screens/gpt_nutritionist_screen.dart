@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../components/openai_chat_widget.dart'; // Importing the OpenAI chat widget.
-import '../app_theme.dart'; // Importing the app's theme settings.
+import '../components/components.dart'; // Importing the components used in the application.
 
 // The main function, which is the entry point of the Flutter application.
 void main() {
@@ -13,7 +13,7 @@ class GptNutritionScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter OpenAI Chat', // Setting the title of the application.
-      theme: AppTheme.dark(), // Applying a dark theme to the application.
+      theme: Theme.of(context), // Setting the theme of the application.
       home:
           OpenAIChatWidget(), // Setting OpenAIChatWidget as the home screen of the app.
     );

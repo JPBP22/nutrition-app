@@ -9,6 +9,7 @@ import '../auth.dart';
 import 'package:provider/provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:go_router/go_router.dart';
+import '../components/components.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -286,7 +287,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               const TextStyle(fontSize: 20, color: Colors.grey),
                         ),
                         const SizedBox(height: 20),
-                        _signOutButton(context) // Displaying a sign-out button.
+                        _signOutButton(
+                            context), // Displaying a sign-out button.
+                        const SizedBox(height: 20),
+                        // Title of the theme switch.
+                        const Text(
+                          'Theme Switch',
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                        // Switch widget to toggle the theme.
+                        Switch(
+                          value:
+                              Provider.of<ThemeNotifier>(context).isDarkModeOn,
+                          onChanged: (val) {
+                            Provider.of<ThemeNotifier>(context, listen: false)
+                                .updateTheme(val);
+                          },
+                        ),
                       ],
                     );
                   } else {
