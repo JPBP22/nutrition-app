@@ -123,12 +123,12 @@ class HomeState extends State<Home> {
         items: const [
           // Defines the items in the BottomNavigationBar.
           BottomNavigationBarItem(
-            icon: Icon(Icons.explore),
-            label: 'Explore',
+            icon: Icon(Icons.shopping_cart),
+            label: 'Shopping List',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.local_dining_outlined),
-            label: 'Recipes',
+            label: 'Weekly Menu',
           ),
           BottomNavigationBarItem(
             icon: Icon(CustomIcons.gpt_logo),
