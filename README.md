@@ -1,6 +1,6 @@
 # NutriApp-flutter.
 
-### App built on flutter to recommend diets to meet users goal on a weekyl basis.
+### App built on flutter to recommend diets to meet users goal on a weekly basis.
 
 1. Login & Sign up.
     - Create user and login.
