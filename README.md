@@ -1,4 +1,4 @@
-# Vitamin-flutter-app.
+# NutriApp-flutter.
 
 ### App built on flutter to recommend diets to meet users goal on a weekyl basis.
 
